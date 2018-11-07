@@ -84,19 +84,24 @@ define("game", ["require", "exports"], function (require, exports) {
                                     { goal: Goal.Sit, odds: .1 },
                                     { goal: Goal.Follow, odds: .9 },
                                 ]);
+                                break;
                             case Goal.Drinking:
                                 considerGoals([
                                     { goal: Goal.Sit, odds: .1 },
                                 ]);
+                                break;
                             case Goal.Follow:
                                 considerGoals([
                                     { goal: Goal.Idle, odds: .1 },
                                 ]);
+                                break;
                             case Goal.GoDrink:
+                                break;
                             case Goal.Sit:
                                 considerGoals([
                                     { goal: Goal.Idle, odds: .1 },
                                 ]);
+                                break;
                         }
                         switch (behavior.goal) {
                             case Goal.Follow:
@@ -108,10 +113,12 @@ define("game", ["require", "exports"], function (require, exports) {
                                     walkTarget.previousPos = transform.position;
                                     walkTarget.fraction = 0;
                                 }
+                                break;
                             case Goal.GoDrink:
                                 walkTarget.target = bowl.get(Transform).position;
                                 walkTarget.previousPos = transform.position;
                                 walkTarget.fraction = 0;
+                                break;
                         }
                     }
                 }
@@ -139,7 +146,7 @@ define("game", ["require", "exports"], function (require, exports) {
                     var walk_1 = dog_2.get(WalkTarget);
                     if (walk_1.fraction < 1) {
                         transform.position = Vector3.Lerp(walk_1.previousPos, walk_1.target, walk_1.fraction);
-                        walk_1.fraction += 1 / 30;
+                        walk_1.fraction += 1 / 60;
                     }
                 }
             }
@@ -165,6 +172,7 @@ define("game", ["require", "exports"], function (require, exports) {
     bowl.get(Transform).position.set(9, 0, 1);
     bowl.set(new OnClick(function (_) {
         setDogGoal(Goal.Drinking);
+        dog.get(Behavior).timer = 0;
     }));
     engine.addEntity(bowl);
     // Garden
@@ -187,6 +195,7 @@ define("game", ["require", "exports"], function (require, exports) {
         else {
             setDogGoal(Goal.Sit);
         }
+        dog.get(Behavior).timer = 0;
     }));
     engine.addEntity(dog);
     ////////////////////////

@@ -52,20 +52,25 @@ export class SwitchGoals {
             considerGoals([
               {goal: Goal.Sit, odds: .1},
               {goal: Goal.Follow, odds: .9},
-            ]);
+            ])
+            break
           case Goal.Drinking:
             considerGoals([
               {goal: Goal.Sit, odds: .1},
-            ]);
+            ])
+            break
           case Goal.Follow:
             considerGoals([
               {goal: Goal.Idle, odds: .1},
-            ]);
+            ])
+            break
           case Goal.GoDrink:
+          break
           case Goal.Sit:
             considerGoals([
               {goal: Goal.Idle, odds: .1},
-            ]);
+            ])
+            break
         } 
       
 
@@ -80,10 +85,12 @@ export class SwitchGoals {
               walkTarget.previousPos = transform.position
               walkTarget.fraction = 0
             }
+            break
           case Goal.GoDrink:
             walkTarget.target = bowl.get(Transform).position
             walkTarget.previousPos = transform.position
             walkTarget.fraction = 0
+            break
         }
       }
     }
@@ -97,7 +104,7 @@ export class walk {
       let walk = dog.get(WalkTarget)
       if (walk.fraction < 1){
         transform.position = Vector3.Lerp(walk.previousPos, walk.target, walk.fraction)
-        walk.fraction += 1/30
+        walk.fraction += 1/60
   
       }
     }
@@ -119,6 +126,7 @@ bowl.set(new Transform())
 bowl.get(Transform).position.set(9, 0, 1)
 bowl.set(new OnClick( _ => {
     setDogGoal(Goal.Drinking)
+    dog.get(Behavior).timer = 0
 }))
 engine.addEntity(bowl)
 
@@ -145,6 +153,7 @@ dog.set(new OnClick( _ => {
   else {
     setDogGoal(Goal.Sit)
   }
+  dog.get(Behavior).timer = 0
 }))
 engine.addEntity(dog)
 
