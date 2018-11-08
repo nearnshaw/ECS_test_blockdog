@@ -73,7 +73,7 @@ define("game", ["require", "exports"], function (require, exports) {
                     var dog_1 = _c.value;
                     var transform = dog_1.get(Transform);
                     var behavior = dog_1.get(Behavior);
-                    var walkTarget = dog_1.get(WalkTarget);
+                    var walk_1 = dog_1.get(WalkTarget);
                     behavior.animationWeight += 0.01;
                     behavior.timer -= dt;
                     if (behavior.timer < 0) {
@@ -96,9 +96,6 @@ define("game", ["require", "exports"], function (require, exports) {
                                 ]);
                                 break;
                             case Goal.GoDrink:
-                                if (walkTarget.fraction > 0.95) {
-                                    setDogGoal(Goal.Drinking);
-                                }
                                 break;
                             case Goal.Sit:
                                 considerGoals([
@@ -106,20 +103,19 @@ define("game", ["require", "exports"], function (require, exports) {
                                 ]);
                                 break;
                         }
-                        switch (behavior.goal) {
-                            case Goal.Follow:
-                                if (!isInBounds(camera.position)) {
-                                    setDogGoal(Goal.Idle);
-                                }
-                                else {
-                                    walkTarget.target = camera.position;
-                                    walkTarget.previousPos = transform.position;
-                                    walkTarget.fraction = 0;
-                                }
-                                break;
-                            case Goal.GoDrink:
-                                break;
+                        if (behavior.goal == Goal.Follow) {
+                            walk_1.target = camera.position;
+                            walk_1.previousPos = transform.position;
+                            walk_1.fraction = 0;
                         }
+                    }
+                    if (behavior.goal == Goal.GoDrink && walk_1.fraction > 0.9) {
+                        setDogGoal(Goal.Drinking);
+                        walk_1.fraction = 1;
+                    }
+                    if (behavior.goal == Goal.Follow && walk_1.fraction > 0.9) {
+                        setDogGoal(Goal.Sit);
+                        walk_1.fraction = 1;
                     }
                 }
             }
@@ -143,11 +139,13 @@ define("game", ["require", "exports"], function (require, exports) {
                 for (var _b = __values(dogs.entities), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var dog_2 = _c.value;
                     var transform = dog_2.get(Transform);
-                    var walk_1 = dog_2.get(WalkTarget);
-                    if (walk_1.fraction < 1) {
-                        transform.position = Vector3.Lerp(walk_1.previousPos, walk_1.target, walk_1.fraction);
-                        walk_1.fraction += 1 / 60;
-                        log("walking to: " + walk_1.target);
+                    var walk_2 = dog_2.get(WalkTarget);
+                    if (walk_2.fraction < 1) {
+                        if (!isInBounds(walk_2.target))
+                            return;
+                        transform.position = Vector3.Lerp(walk_2.previousPos, walk_2.target, walk_2.fraction);
+                        walk_2.fraction += 1 / 60;
+                        //log("walking to: " + walk.target)
                     }
                 }
             }

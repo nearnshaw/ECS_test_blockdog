@@ -42,7 +42,7 @@ export class SwitchGoals {
     for (let dog of dogs.entities) {
       let transform = dog.get(Transform)
       let behavior = dog.get(Behavior)
-      let walkTarget = dog.get(WalkTarget)
+      let walk = dog.get(WalkTarget)
       behavior.animationWeight += 0.01
       behavior.timer -= dt
       if (behavior.timer < 0 ){
@@ -65,10 +65,7 @@ export class SwitchGoals {
             ])
             break
           case Goal.GoDrink:
-            if(walkTarget.fraction > 0.95){
-              setDogGoal(Goal.Drinking)
-            }
-          break
+            break
           case Goal.Sit:
             considerGoals([
               {goal: Goal.Idle, odds: .1},
@@ -77,22 +74,19 @@ export class SwitchGoals {
         } 
       
 
-        switch(behavior.goal)
-        {
-          case Goal.Follow:
-            if(!isInBounds(camera.position)) {
-              setDogGoal(Goal.Idle)
-            }
-            else{
-              walkTarget.target = camera.position
-              walkTarget.previousPos = transform.position
-              walkTarget.fraction = 0
-            }
-            break
-          case Goal.GoDrink:
-            
-            break
+        if (behavior.goal ==Goal.Follow){
+          walk.target = camera.position
+          walk.previousPos = transform.position
+          walk.fraction = 0
         }
+      }
+      if(behavior.goal == Goal.GoDrink && walk.fraction > 0.9){
+        setDogGoal(Goal.Drinking)
+        walk.fraction = 1
+      }
+      if(behavior.goal == Goal.Follow && walk.fraction > 0.9){
+        setDogGoal(Goal.Sit)
+        walk.fraction = 1
       }
     }
   }
@@ -104,10 +98,11 @@ export class walk {
       let transform = dog.get(Transform)
       let walk = dog.get(WalkTarget)
       if (walk.fraction < 1){
+        if(!isInBounds(walk.target)) return
         transform.position = Vector3.Lerp(walk.previousPos, walk.target, walk.fraction)
         walk.fraction += 1/60
-        log("walking to: " + walk.target)
-      }
+        //log("walking to: " + walk.target)
+      } 
     }
   }
 }
@@ -194,7 +189,6 @@ function considerGoals(goals: {goal: Goal, odds: number}[]) {
             continue;
           }
       }
-
       setDogGoal(goals[i].goal);
       return;
     }
