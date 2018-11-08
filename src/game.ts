@@ -17,7 +17,7 @@ export class Behavior {
     goal: Goal = Goal.Idle
     previousGoal: Goal = Goal.Idle
     animationWeight: number = 1
-    timer: number = 100
+    timer: number = 1
 }
 
 @Component('walkTarget')
@@ -44,9 +44,9 @@ export class SwitchGoals {
       let behavior = dog.get(Behavior)
       let walkTarget = dog.get(WalkTarget)
       behavior.animationWeight += 0.01
-      behavior.timer -= 1
+      behavior.timer -= dt
       if (behavior.timer < 0 ){
-        behavior.timer = 60
+        behavior.timer = 1
         switch(behavior.goal){
           case Goal.Idle:
             considerGoals([
@@ -56,7 +56,7 @@ export class SwitchGoals {
             break
           case Goal.Drinking:
             considerGoals([
-              {goal: Goal.Sit, odds: .1},
+              {goal: Goal.Sit, odds: .3},
             ])
             break
           case Goal.Follow:
@@ -65,6 +65,9 @@ export class SwitchGoals {
             ])
             break
           case Goal.GoDrink:
+            if(walkTarget.fraction > 0.95){
+              setDogGoal(Goal.Drinking)
+            }
           break
           case Goal.Sit:
             considerGoals([
@@ -87,9 +90,7 @@ export class SwitchGoals {
             }
             break
           case Goal.GoDrink:
-            walkTarget.target = bowl.get(Transform).position
-            walkTarget.previousPos = transform.position
-            walkTarget.fraction = 0
+            
             break
         }
       }
@@ -105,7 +106,7 @@ export class walk {
       if (walk.fraction < 1){
         transform.position = Vector3.Lerp(walk.previousPos, walk.target, walk.fraction)
         walk.fraction += 1/60
-  
+        log("walking to: " + walk.target)
       }
     }
   }
@@ -125,8 +126,10 @@ bowl.set(new GLTFShape("models/BlockDogBowl.gltf"))
 bowl.set(new Transform())
 bowl.get(Transform).position.set(9, 0, 1)
 bowl.set(new OnClick( _ => {
-    setDogGoal(Goal.Drinking)
-    dog.get(Behavior).timer = 0
+    setDogGoal(Goal.GoDrink)
+    dog.get(WalkTarget).target = bowl.get(Transform).position
+    dog.get(WalkTarget).previousPos = dog.get(Transform).position
+    dog.get(WalkTarget).fraction = 0
 }))
 engine.addEntity(bowl)
 

@@ -38,7 +38,7 @@ define("game", ["require", "exports"], function (require, exports) {
             this.goal = Goal.Idle;
             this.previousGoal = Goal.Idle;
             this.animationWeight = 1;
-            this.timer = 100;
+            this.timer = 1;
         }
         Behavior = __decorate([
             Component('behavior')
@@ -75,9 +75,9 @@ define("game", ["require", "exports"], function (require, exports) {
                     var behavior = dog_1.get(Behavior);
                     var walkTarget = dog_1.get(WalkTarget);
                     behavior.animationWeight += 0.01;
-                    behavior.timer -= 1;
+                    behavior.timer -= dt;
                     if (behavior.timer < 0) {
-                        behavior.timer = 60;
+                        behavior.timer = 1;
                         switch (behavior.goal) {
                             case Goal.Idle:
                                 considerGoals([
@@ -87,7 +87,7 @@ define("game", ["require", "exports"], function (require, exports) {
                                 break;
                             case Goal.Drinking:
                                 considerGoals([
-                                    { goal: Goal.Sit, odds: .1 },
+                                    { goal: Goal.Sit, odds: .3 },
                                 ]);
                                 break;
                             case Goal.Follow:
@@ -96,6 +96,9 @@ define("game", ["require", "exports"], function (require, exports) {
                                 ]);
                                 break;
                             case Goal.GoDrink:
+                                if (walkTarget.fraction > 0.95) {
+                                    setDogGoal(Goal.Drinking);
+                                }
                                 break;
                             case Goal.Sit:
                                 considerGoals([
@@ -115,9 +118,6 @@ define("game", ["require", "exports"], function (require, exports) {
                                 }
                                 break;
                             case Goal.GoDrink:
-                                walkTarget.target = bowl.get(Transform).position;
-                                walkTarget.previousPos = transform.position;
-                                walkTarget.fraction = 0;
                                 break;
                         }
                     }
@@ -147,6 +147,7 @@ define("game", ["require", "exports"], function (require, exports) {
                     if (walk_1.fraction < 1) {
                         transform.position = Vector3.Lerp(walk_1.previousPos, walk_1.target, walk_1.fraction);
                         walk_1.fraction += 1 / 60;
+                        log("walking to: " + walk_1.target);
                     }
                 }
             }
@@ -171,8 +172,10 @@ define("game", ["require", "exports"], function (require, exports) {
     bowl.set(new Transform());
     bowl.get(Transform).position.set(9, 0, 1);
     bowl.set(new OnClick(function (_) {
-        setDogGoal(Goal.Drinking);
-        dog.get(Behavior).timer = 0;
+        setDogGoal(Goal.GoDrink);
+        dog.get(WalkTarget).target = bowl.get(Transform).position;
+        dog.get(WalkTarget).previousPos = dog.get(Transform).position;
+        dog.get(WalkTarget).fraction = 0;
     }));
     engine.addEntity(bowl);
     // Garden
