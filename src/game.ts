@@ -37,7 +37,7 @@ const dogs = engine.getComponentGroup(Transform, Behavior, WalkTarget)
 // Systems
 
 
-export class SwitchGoals {
+export class SwitchGoals implements ISystem {
   update(dt: number) {
     for (let dog of dogs.entities) {
       let transform = dog.get(Transform)
@@ -78,11 +78,13 @@ export class SwitchGoals {
           walk.target = camera.position
           walk.previousPos = transform.position
           walk.fraction = 0
+          
         }
       }
       if(behavior.goal == Goal.GoDrink && walk.fraction > 0.9){
         setDogGoal(Goal.Drinking)
         walk.fraction = 1
+        
       }
       if(behavior.goal == Goal.Follow && walk.fraction > 0.9){
         setDogGoal(Goal.Sit)
@@ -92,11 +94,12 @@ export class SwitchGoals {
   }
 }
 
-export class walk {
+export class walk implements ISystem  {
   update(dt: number) {
     for (let dog of dogs.entities) {
       let transform = dog.get(Transform)
       let walk = dog.get(WalkTarget)
+      transform.lookAt(walk.target)
       if (walk.fraction < 1){
         if(!isInBounds(walk.target)) return
         transform.position = Vector3.Lerp(walk.previousPos, walk.target, walk.fraction)
