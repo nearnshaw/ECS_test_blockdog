@@ -40,12 +40,13 @@ const dogs = engine.getComponentGroup(Transform, Behavior, WalkTarget)
 export class SwitchGoals implements ISystem {
   update(dt: number) {
     for (let dog of dogs.entities) {
-      let transform = dog.get(Transform)
       let behavior = dog.get(Behavior)
       let walk = dog.get(WalkTarget)
+      let transform = dog.get(Transform)
       behavior.animationWeight += 0.01
       behavior.timer -= dt
-      if (behavior.timer < 0 ){
+      //getAnimationRates(dog)
+      if (behavior.timer < 0 ){ 
         behavior.timer = 1
         switch(behavior.goal){
           case Goal.Idle:
@@ -90,6 +91,7 @@ export class SwitchGoals implements ISystem {
         setDogGoal(Goal.Sit)
         walk.fraction = 1
       }
+      setAnimations(dog)
     }
   }
 }
@@ -113,50 +115,6 @@ export class walk implements ISystem  {
 
 engine.addSystem(new SwitchGoals())
 engine.addSystem(new walk())
-
-///////////////////////////
-// INITIAL ENTITIES
-
-
-// Bowl
-const bowl = new Entity()
-bowl.set(new GLTFShape("models/BlockDogBowl.gltf"))
-bowl.set(new Transform())
-bowl.get(Transform).position.set(9, 0, 1)
-bowl.set(new OnClick( _ => {
-    setDogGoal(Goal.GoDrink)
-    dog.get(WalkTarget).target = bowl.get(Transform).position
-    dog.get(WalkTarget).previousPos = dog.get(Transform).position
-    dog.get(WalkTarget).fraction = 0
-}))
-engine.addEntity(bowl)
-
-// Garden
-const garden = new Entity()
-garden.set(new GLTFShape("models/garden.gltf"))
-garden.set(new Transform())
-garden.get(Transform).position.set(5, 0, 5)
-engine.addEntity(garden)
-
-
-// Dog
-const dog = new Entity()
-dog.set(new GLTFShape("models/BlockDog.gltf"))
-dog.set(new Transform())
-dog.get(Transform).position.set(5, 0, 5)
-dog.set(new Behavior())
-dog.set(new WalkTarget())
-dog.set(new OnClick( _ => {
-  if (dog.get(Behavior).goal == Goal.Sit)
-  {
-    setDogGoal(Goal.Idle)
-  }
-  else {
-    setDogGoal(Goal.Sit)
-  }
-  dog.get(Behavior).timer = 0
-}))
-engine.addEntity(dog)
 
 
 ////////////////////////
@@ -199,33 +157,106 @@ function considerGoals(goals: {goal: Goal, odds: number}[]) {
 }
 
 
+///////////////////////////
+// INITIAL ENTITIES
 
-// function getAnimationRates() : {idle: number, sit: number, walk: number} {
+
+// Bowl
+const bowl = new Entity()
+bowl.set(new GLTFShape("models/BlockDogBowl.gltf"))
+bowl.set(new Transform())
+bowl.get(Transform).position.set(9, 0, 1)
+bowl.set(new OnClick( _ => {
+    setDogGoal(Goal.GoDrink)
+    dog.get(WalkTarget).target = bowl.get(Transform).position
+    dog.get(WalkTarget).previousPos = dog.get(Transform).position
+    dog.get(WalkTarget).fraction = 0
+}))
+engine.addEntity(bowl)
+
+// Garden
+const garden = new Entity()
+garden.set(new GLTFShape("models/garden.gltf"))
+garden.set(new Transform())
+garden.get(Transform).position.set(5, 0, 5)
+engine.addEntity(garden)
+
+// Dog
+const dog = new Entity()
+dog.set(new GLTFShape("models/BlockDog.gltf"))
+dog.get(GLTFShape).addClip(new AnimationClip('Idle', { weight: 1, speed: 1 }))
+dog.get(GLTFShape).addClip(new AnimationClip('Sitting', { weight: 1, speed: 1 }))
+dog.get(GLTFShape).addClip(new AnimationClip('Walking', { weight: 1, speed: 1 }))
+dog.get(GLTFShape).addClip(new AnimationClip('Drinking', { weight: 1, speed: 1 }))
+dog.get(GLTFShape).getClip("Idle").play()
+
+dog.set(new Transform())
+dog.get(Transform).position.set(5, 0, 5)
+dog.set(new Behavior())
+dog.set(new WalkTarget())
+dog.set(new OnClick( _ => {
+  if (dog.get(Behavior).goal == Goal.Sit)
+  {
+    setDogGoal(Goal.Idle)
+  }
+  else {
+    setDogGoal(Goal.Sit)
+  }
+  dog.get(Behavior).timer = 0
+}))
+engine.addEntity(dog)
+
+
+// function getAnimationRates(dog: Entity) {
 //   const weight = Math.min(Math.max(dog.get(Behavior).animationWeight, 0), 1);
 //   const inverse = 1 - weight;
+//   let shape = dog.get(GLTFShape)
+//   let sit = 0
+//   let walk = 0
 
-//   let sit = 0;
-//   let walk = 0;
-  
 //   switch(dog.get(Behavior).previousGoal){
 //     case Goal.Sit:
-//       sit = inverse;
+//       shape.getClip("Sitting").weight = inverse
+//       sit = inverse
 //       break;
 //     case Goal.Follow:
 //     case Goal.GoDrink:
-//       walk = inverse;
+//       shape.getClip("Walking").weight = inverse
+//       walk = inverse
 //       break;
 //   }
 
 //   switch(dog.get(Behavior).goal){
 //     case Goal.Sit:
-//       sit = weight;
+//       shape.getClip("Sitting").weight = weight
+//       sit = weight
 //       break;
 //     case Goal.Follow:
 //     case Goal.GoDrink:
-//       walk = weight;
+//       shape.getClip("Walking").weight = weight
+//       walk = weight
 //       break;
 //   }
 
-//   return {idle: 1 - (sit + walk), sit, walk};
+//   shape.getClip("Idle").weight = 1 - (sit + walk)
+
 // }
+
+function setAnimations(dog: Entity){
+  switch(dog.get(Behavior).goal){
+    case Goal.Sit:
+      dog.get(GLTFShape).getClip("Sitting").play()
+      break;
+    case Goal.Follow:
+      dog.get(GLTFShape).getClip("Walking").play()
+    case Goal.GoDrink:
+      dog.get(GLTFShape).getClip("Walking").play()
+      break;
+    case Goal.Drinking:
+      dog.get(GLTFShape).getClip("Drinking").play()
+      break;
+    case Goal.Sit:
+      dog.get(GLTFShape).getClip("Sitting").play()
+      break;
+  }
+}
