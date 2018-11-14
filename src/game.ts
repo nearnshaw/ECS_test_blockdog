@@ -43,7 +43,7 @@ export class SwitchGoals implements ISystem {
       let behavior = dog.get(Behavior)
       let walk = dog.get(WalkTarget)
       let transform = dog.get(Transform)
-      behavior.animationWeight += 0.01
+      //behavior.animationWeight += 0.01
       behavior.timer -= dt
       //getAnimationRates(dog)
       if (behavior.timer < 0 ){ 
@@ -82,12 +82,12 @@ export class SwitchGoals implements ISystem {
           
         }
       }
-      if(behavior.goal == Goal.GoDrink && walk.fraction > 0.9){
+      if(behavior.goal == Goal.GoDrink && walk.fraction > 0.8){
         setDogGoal(Goal.Drinking)
         walk.fraction = 1
         
       }
-      if(behavior.goal == Goal.Follow && walk.fraction > 0.9){
+      if(behavior.goal == Goal.Follow && Vector3.Distance(walk.target, transform.position) < 2){
         setDogGoal(Goal.Sit)
         walk.fraction = 1
       }
@@ -106,7 +106,6 @@ export class walk implements ISystem  {
         if(!isInBounds(walk.target)) return
         transform.position = Vector3.Lerp(walk.previousPos, walk.target, walk.fraction)
         walk.fraction += 1/90
-        //log("walking to: " + walk.target)
       } 
     }
   }
@@ -185,7 +184,8 @@ engine.addEntity(garden)
 const dog = new Entity()
 dog.set(new GLTFShape("models/BlockDog.gltf"))
 dog.get(GLTFShape).addClip(new AnimationClip('Idle', { speed: 1 }))
-dog.get(GLTFShape).addClip(new AnimationClip('Sitting', { speed: 1 }))
+dog.get(GLTFShape).addClip(new AnimationClip('Sitting', { speed: 1, loop: false }))
+dog.get(GLTFShape).addClip(new AnimationClip('Standing', { speed: 1 , loop: false}))
 dog.get(GLTFShape).addClip(new AnimationClip('Walking', { speed: 1 }))
 dog.get(GLTFShape).addClip(new AnimationClip('Drinking', { speed: 1 }))
 dog.get(GLTFShape).getClip("Idle").play()
@@ -244,11 +244,13 @@ engine.addEntity(dog)
 
 function setAnimations(dog: Entity){
   let sit = dog.get(GLTFShape).getClip("Sitting")
+  let stand = dog.get(GLTFShape).getClip("Standing")
   let walk = dog.get(GLTFShape).getClip("Walking")
   let drink = dog.get(GLTFShape).getClip("Drinking")
   let idle = dog.get(GLTFShape).getClip("Idle")
   
   sit.playing = false
+  stand.playing = false
   walk.playing = false
   drink.playing = false
   idle.playing = false  
@@ -263,10 +265,13 @@ function setAnimations(dog: Entity){
       walk.playing = true
       break;
     case Goal.Drinking:
-       drink.playing = true
-       break;
+      drink.playing = true
+      break;
     case Goal.Idle:
       idle.playing = true
       break;
+  }
+  if (dog.get(Behavior).previousGoal == Goal.Sit){
+    stand.playing = true
   }
 }

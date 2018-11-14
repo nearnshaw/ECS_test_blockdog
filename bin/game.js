@@ -74,7 +74,7 @@ define("game", ["require", "exports"], function (require, exports) {
                     var behavior = dog_1.get(Behavior);
                     var walk_1 = dog_1.get(WalkTarget);
                     var transform = dog_1.get(Transform);
-                    behavior.animationWeight += 0.01;
+                    //behavior.animationWeight += 0.01
                     behavior.timer -= dt;
                     //getAnimationRates(dog)
                     if (behavior.timer < 0) {
@@ -110,11 +110,11 @@ define("game", ["require", "exports"], function (require, exports) {
                             walk_1.fraction = 0;
                         }
                     }
-                    if (behavior.goal == Goal.GoDrink && walk_1.fraction > 0.9) {
+                    if (behavior.goal == Goal.GoDrink && walk_1.fraction > 0.8) {
                         setDogGoal(Goal.Drinking);
                         walk_1.fraction = 1;
                     }
-                    if (behavior.goal == Goal.Follow && walk_1.fraction > 0.9) {
+                    if (behavior.goal == Goal.Follow && Vector3.Distance(walk_1.target, transform.position) < 2) {
                         setDogGoal(Goal.Sit);
                         walk_1.fraction = 1;
                     }
@@ -148,7 +148,6 @@ define("game", ["require", "exports"], function (require, exports) {
                             return;
                         transform.position = Vector3.Lerp(walk_2.previousPos, walk_2.target, walk_2.fraction);
                         walk_2.fraction += 1 / 90;
-                        //log("walking to: " + walk.target)
                     }
                 }
             }
@@ -216,7 +215,8 @@ define("game", ["require", "exports"], function (require, exports) {
     var dog = new Entity();
     dog.set(new GLTFShape("models/BlockDog.gltf"));
     dog.get(GLTFShape).addClip(new AnimationClip('Idle', { speed: 1 }));
-    dog.get(GLTFShape).addClip(new AnimationClip('Sitting', { speed: 1 }));
+    dog.get(GLTFShape).addClip(new AnimationClip('Sitting', { speed: 1, loop: false }));
+    dog.get(GLTFShape).addClip(new AnimationClip('Standing', { speed: 1, loop: false }));
     dog.get(GLTFShape).addClip(new AnimationClip('Walking', { speed: 1 }));
     dog.get(GLTFShape).addClip(new AnimationClip('Drinking', { speed: 1 }));
     dog.get(GLTFShape).getClip("Idle").play();
@@ -266,10 +266,12 @@ define("game", ["require", "exports"], function (require, exports) {
     // }
     function setAnimations(dog) {
         var sit = dog.get(GLTFShape).getClip("Sitting");
+        var stand = dog.get(GLTFShape).getClip("Standing");
         var walk = dog.get(GLTFShape).getClip("Walking");
         var drink = dog.get(GLTFShape).getClip("Drinking");
         var idle = dog.get(GLTFShape).getClip("Idle");
         sit.playing = false;
+        stand.playing = false;
         walk.playing = false;
         drink.playing = false;
         idle.playing = false;
@@ -288,6 +290,9 @@ define("game", ["require", "exports"], function (require, exports) {
             case Goal.Idle:
                 idle.playing = true;
                 break;
+        }
+        if (dog.get(Behavior).previousGoal == Goal.Sit) {
+            stand.playing = true;
         }
     }
 });
