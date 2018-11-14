@@ -105,7 +105,7 @@ export class walk implements ISystem  {
       if (walk.fraction < 1){
         if(!isInBounds(walk.target)) return
         transform.position = Vector3.Lerp(walk.previousPos, walk.target, walk.fraction)
-        walk.fraction += 1/60
+        walk.fraction += 1/90
         //log("walking to: " + walk.target)
       } 
     }
@@ -184,10 +184,10 @@ engine.addEntity(garden)
 // Dog
 const dog = new Entity()
 dog.set(new GLTFShape("models/BlockDog.gltf"))
-dog.get(GLTFShape).addClip(new AnimationClip('Idle', { weight: 1, speed: 1 }))
-dog.get(GLTFShape).addClip(new AnimationClip('Sitting', { weight: 1, speed: 1 }))
-dog.get(GLTFShape).addClip(new AnimationClip('Walking', { weight: 1, speed: 1 }))
-dog.get(GLTFShape).addClip(new AnimationClip('Drinking', { weight: 1, speed: 1 }))
+dog.get(GLTFShape).addClip(new AnimationClip('Idle', { speed: 1 }))
+dog.get(GLTFShape).addClip(new AnimationClip('Sitting', { speed: 1 }))
+dog.get(GLTFShape).addClip(new AnimationClip('Walking', { speed: 1 }))
+dog.get(GLTFShape).addClip(new AnimationClip('Drinking', { speed: 1 }))
 dog.get(GLTFShape).getClip("Idle").play()
 
 dog.set(new Transform())
@@ -243,20 +243,30 @@ engine.addEntity(dog)
 // }
 
 function setAnimations(dog: Entity){
+  let sit = dog.get(GLTFShape).getClip("Sitting")
+  let walk = dog.get(GLTFShape).getClip("Walking")
+  let drink = dog.get(GLTFShape).getClip("Drinking")
+  let idle = dog.get(GLTFShape).getClip("Idle")
+  
+  sit.playing = false
+  walk.playing = false
+  drink.playing = false
+  idle.playing = false  
+
   switch(dog.get(Behavior).goal){
     case Goal.Sit:
-      dog.get(GLTFShape).getClip("Sitting").play()
+      sit.playing = true
       break;
     case Goal.Follow:
-      dog.get(GLTFShape).getClip("Walking").play()
+      walk.playing = true
     case Goal.GoDrink:
-      dog.get(GLTFShape).getClip("Walking").play()
+      walk.playing = true
       break;
     case Goal.Drinking:
-      dog.get(GLTFShape).getClip("Drinking").play()
-      break;
-    case Goal.Sit:
-      dog.get(GLTFShape).getClip("Sitting").play()
+       drink.playing = true
+       break;
+    case Goal.Idle:
+      idle.playing = true
       break;
   }
 }

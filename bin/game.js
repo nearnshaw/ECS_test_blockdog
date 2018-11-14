@@ -147,7 +147,7 @@ define("game", ["require", "exports"], function (require, exports) {
                         if (!isInBounds(walk_2.target))
                             return;
                         transform.position = Vector3.Lerp(walk_2.previousPos, walk_2.target, walk_2.fraction);
-                        walk_2.fraction += 1 / 60;
+                        walk_2.fraction += 1 / 90;
                         //log("walking to: " + walk.target)
                     }
                 }
@@ -215,10 +215,10 @@ define("game", ["require", "exports"], function (require, exports) {
     // Dog
     var dog = new Entity();
     dog.set(new GLTFShape("models/BlockDog.gltf"));
-    dog.get(GLTFShape).addClip(new AnimationClip('Idle', { weight: 1, speed: 1 }));
-    dog.get(GLTFShape).addClip(new AnimationClip('Sitting', { weight: 1, speed: 1 }));
-    dog.get(GLTFShape).addClip(new AnimationClip('Walking', { weight: 1, speed: 1 }));
-    dog.get(GLTFShape).addClip(new AnimationClip('Drinking', { weight: 1, speed: 1 }));
+    dog.get(GLTFShape).addClip(new AnimationClip('Idle', { speed: 1 }));
+    dog.get(GLTFShape).addClip(new AnimationClip('Sitting', { speed: 1 }));
+    dog.get(GLTFShape).addClip(new AnimationClip('Walking', { speed: 1 }));
+    dog.get(GLTFShape).addClip(new AnimationClip('Drinking', { speed: 1 }));
     dog.get(GLTFShape).getClip("Idle").play();
     dog.set(new Transform());
     dog.get(Transform).position.set(5, 0, 5);
@@ -265,20 +265,28 @@ define("game", ["require", "exports"], function (require, exports) {
     //   shape.getClip("Idle").weight = 1 - (sit + walk)
     // }
     function setAnimations(dog) {
+        var sit = dog.get(GLTFShape).getClip("Sitting");
+        var walk = dog.get(GLTFShape).getClip("Walking");
+        var drink = dog.get(GLTFShape).getClip("Drinking");
+        var idle = dog.get(GLTFShape).getClip("Idle");
+        sit.playing = false;
+        walk.playing = false;
+        drink.playing = false;
+        idle.playing = false;
         switch (dog.get(Behavior).goal) {
             case Goal.Sit:
-                dog.get(GLTFShape).getClip("Sitting").play();
+                sit.playing = true;
                 break;
             case Goal.Follow:
-                dog.get(GLTFShape).getClip("Walking").play();
+                walk.playing = true;
             case Goal.GoDrink:
-                dog.get(GLTFShape).getClip("Walking").play();
+                walk.playing = true;
                 break;
             case Goal.Drinking:
-                dog.get(GLTFShape).getClip("Drinking").play();
+                drink.playing = true;
                 break;
-            case Goal.Sit:
-                dog.get(GLTFShape).getClip("Sitting").play();
+            case Goal.Idle:
+                idle.playing = true;
                 break;
         }
     }
