@@ -41,7 +41,7 @@ export class SwitchGoals implements ISystem {
       let transform = dog.get(Transform)
       behavior.timer -= dt
       if (behavior.timer < 0) {
-        behavior.timer = 1
+        behavior.timer = 2
         switch (behavior.goal) {
           case Goal.Idle:
             considerGoals([
@@ -69,7 +69,7 @@ export class SwitchGoals implements ISystem {
       }
       if (
         behavior.goal == Goal.GoDrink &&
-        Vector3.Distance(walk.target, transform.position) < 2
+        Vector3.Distance(walk.target, transform.position) < 1
       ) {
         setDogGoal(Goal.Drinking)
         walk.fraction = 1
@@ -222,7 +222,9 @@ dog.set(
       setDogGoal(Goal.Idle)
     } else {
       setDogGoal(Goal.Sit)
+      dog.get(WalkTarget).fraction = 1
     }
   })
 )
 engine.addEntity(dog)
+
