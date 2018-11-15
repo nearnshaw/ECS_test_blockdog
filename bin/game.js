@@ -37,7 +37,6 @@ define("game", ["require", "exports"], function (require, exports) {
         function Behavior() {
             this.goal = Goal.Idle;
             this.previousGoal = Goal.Idle;
-            this.animationWeight = 1;
             this.timer = 1;
         }
         Behavior = __decorate([
@@ -74,34 +73,26 @@ define("game", ["require", "exports"], function (require, exports) {
                     var behavior = dog_1.get(Behavior);
                     var walk_1 = dog_1.get(WalkTarget);
                     var transform = dog_1.get(Transform);
-                    //behavior.animationWeight += 0.01
                     behavior.timer -= dt;
-                    //getAnimationRates(dog)
                     if (behavior.timer < 0) {
                         behavior.timer = 1;
                         switch (behavior.goal) {
                             case Goal.Idle:
                                 considerGoals([
-                                    { goal: Goal.Sit, odds: .1 },
-                                    { goal: Goal.Follow, odds: .9 },
+                                    { goal: Goal.Sit, odds: 0.1 },
+                                    { goal: Goal.Follow, odds: 0.9 }
                                 ]);
                                 break;
                             case Goal.Drinking:
-                                considerGoals([
-                                    { goal: Goal.Sit, odds: .3 },
-                                ]);
+                                considerGoals([{ goal: Goal.Sit, odds: 0.3 }]);
                                 break;
                             case Goal.Follow:
-                                considerGoals([
-                                    { goal: Goal.Idle, odds: .1 },
-                                ]);
+                                considerGoals([{ goal: Goal.Idle, odds: 0.1 }]);
                                 break;
                             case Goal.GoDrink:
                                 break;
                             case Goal.Sit:
-                                considerGoals([
-                                    { goal: Goal.Idle, odds: .1 },
-                                ]);
+                                considerGoals([{ goal: Goal.Idle, odds: 0.1 }]);
                                 break;
                         }
                         if (behavior.goal == Goal.Follow) {
@@ -110,11 +101,13 @@ define("game", ["require", "exports"], function (require, exports) {
                             walk_1.fraction = 0;
                         }
                     }
-                    if (behavior.goal == Goal.GoDrink && walk_1.fraction > 0.8) {
+                    if (behavior.goal == Goal.GoDrink &&
+                        Vector3.Distance(walk_1.target, transform.position) < 2) {
                         setDogGoal(Goal.Drinking);
                         walk_1.fraction = 1;
                     }
-                    if (behavior.goal == Goal.Follow && Vector3.Distance(walk_1.target, transform.position) < 2) {
+                    if (behavior.goal == Goal.Follow &&
+                        Vector3.Distance(walk_1.target, transform.position) < 2) {
                         setDogGoal(Goal.Sit);
                         walk_1.fraction = 1;
                     }
@@ -167,15 +160,13 @@ define("game", ["require", "exports"], function (require, exports) {
     ////////////////////////
     //OTHER FUNCTIONS
     function isInBounds(position) {
-        return position.x > .5 && position.x < 9.5
-            && position.z > .5 && position.z < 9.5;
+        return (position.x > 0.5 && position.x < 9.5 && position.z > 0.5 && position.z < 9.5);
     }
     function setDogGoal(goal) {
         var behavior = dog.get(Behavior);
-        behavior.previousGoal = behavior.goal; //is this a reference?
+        behavior.previousGoal = behavior.goal;
         behavior.goal = goal;
-        behavior.animationWeight = 1 - behavior.animationWeight;
-        log("new goal: " + goal);
+        log('new goal: ' + goal);
     }
     function considerGoals(goals) {
         for (var i = 0; i < goals.length; i++) {
@@ -191,85 +182,12 @@ define("game", ["require", "exports"], function (require, exports) {
             }
         }
     }
-    ///////////////////////////
-    // INITIAL ENTITIES
-    // Bowl
-    var bowl = new Entity();
-    bowl.set(new GLTFShape("models/BlockDogBowl.gltf"));
-    bowl.set(new Transform());
-    bowl.get(Transform).position.set(9, 0, 1);
-    bowl.set(new OnClick(function (_) {
-        setDogGoal(Goal.GoDrink);
-        dog.get(WalkTarget).target = bowl.get(Transform).position;
-        dog.get(WalkTarget).previousPos = dog.get(Transform).position;
-        dog.get(WalkTarget).fraction = 0;
-    }));
-    engine.addEntity(bowl);
-    // Garden
-    var garden = new Entity();
-    garden.set(new GLTFShape("models/garden.gltf"));
-    garden.set(new Transform());
-    garden.get(Transform).position.set(5, 0, 5);
-    engine.addEntity(garden);
-    // Dog
-    var dog = new Entity();
-    dog.set(new GLTFShape("models/BlockDog.gltf"));
-    dog.get(GLTFShape).addClip(new AnimationClip('Idle', { speed: 1 }));
-    dog.get(GLTFShape).addClip(new AnimationClip('Sitting', { speed: 1, loop: false }));
-    dog.get(GLTFShape).addClip(new AnimationClip('Standing', { speed: 1, loop: false }));
-    dog.get(GLTFShape).addClip(new AnimationClip('Walking', { speed: 1 }));
-    dog.get(GLTFShape).addClip(new AnimationClip('Drinking', { speed: 1 }));
-    dog.get(GLTFShape).getClip("Idle").play();
-    dog.set(new Transform());
-    dog.get(Transform).position.set(5, 0, 5);
-    dog.set(new Behavior());
-    dog.set(new WalkTarget());
-    dog.set(new OnClick(function (_) {
-        if (dog.get(Behavior).goal == Goal.Sit) {
-            setDogGoal(Goal.Idle);
-        }
-        else {
-            setDogGoal(Goal.Sit);
-        }
-        dog.get(Behavior).timer = 0;
-    }));
-    engine.addEntity(dog);
-    // function getAnimationRates(dog: Entity) {
-    //   const weight = Math.min(Math.max(dog.get(Behavior).animationWeight, 0), 1);
-    //   const inverse = 1 - weight;
-    //   let shape = dog.get(GLTFShape)
-    //   let sit = 0
-    //   let walk = 0
-    //   switch(dog.get(Behavior).previousGoal){
-    //     case Goal.Sit:
-    //       shape.getClip("Sitting").weight = inverse
-    //       sit = inverse
-    //       break;
-    //     case Goal.Follow:
-    //     case Goal.GoDrink:
-    //       shape.getClip("Walking").weight = inverse
-    //       walk = inverse
-    //       break;
-    //   }
-    //   switch(dog.get(Behavior).goal){
-    //     case Goal.Sit:
-    //       shape.getClip("Sitting").weight = weight
-    //       sit = weight
-    //       break;
-    //     case Goal.Follow:
-    //     case Goal.GoDrink:
-    //       shape.getClip("Walking").weight = weight
-    //       walk = weight
-    //       break;
-    //   }
-    //   shape.getClip("Idle").weight = 1 - (sit + walk)
-    // }
     function setAnimations(dog) {
-        var sit = dog.get(GLTFShape).getClip("Sitting");
-        var stand = dog.get(GLTFShape).getClip("Standing");
-        var walk = dog.get(GLTFShape).getClip("Walking");
-        var drink = dog.get(GLTFShape).getClip("Drinking");
-        var idle = dog.get(GLTFShape).getClip("Idle");
+        var sit = dog.get(GLTFShape).getClip('Sitting');
+        var stand = dog.get(GLTFShape).getClip('Standing');
+        var walk = dog.get(GLTFShape).getClip('Walking');
+        var drink = dog.get(GLTFShape).getClip('Drinking');
+        var idle = dog.get(GLTFShape).getClip('Idle');
         sit.playing = false;
         stand.playing = false;
         walk.playing = false;
@@ -295,4 +213,50 @@ define("game", ["require", "exports"], function (require, exports) {
             stand.playing = true;
         }
     }
+    ///////////////////////////
+    // INITIAL ENTITIES
+    // Bowl
+    var bowl = new Entity();
+    bowl.set(new GLTFShape('models/BlockDogBowl.gltf'));
+    bowl.set(new Transform());
+    bowl.get(Transform).position.set(9, 0, 1);
+    bowl.set(new OnClick(function (_) {
+        setDogGoal(Goal.GoDrink);
+        dog.get(WalkTarget).target = bowl.get(Transform).position;
+        dog.get(WalkTarget).previousPos = dog.get(Transform).position;
+        dog.get(WalkTarget).fraction = 0;
+    }));
+    engine.addEntity(bowl);
+    // Garden
+    var garden = new Entity();
+    garden.set(new GLTFShape('models/garden.gltf'));
+    garden.set(new Transform());
+    garden.get(Transform).position.set(5, 0, 5);
+    engine.addEntity(garden);
+    // Dog
+    var dog = new Entity();
+    dog.set(new GLTFShape('models/BlockDog.gltf'));
+    dog.get(GLTFShape).addClip(new AnimationClip('Idle', { speed: 1 }));
+    dog.get(GLTFShape)
+        .addClip(new AnimationClip('Sitting', { speed: 1, loop: false }));
+    dog.get(GLTFShape)
+        .addClip(new AnimationClip('Standing', { speed: 1, loop: false }));
+    dog.get(GLTFShape).addClip(new AnimationClip('Walking', { speed: 1 }));
+    dog.get(GLTFShape).addClip(new AnimationClip('Drinking', { speed: 1 }));
+    dog.get(GLTFShape)
+        .getClip('Idle')
+        .play();
+    dog.set(new Transform());
+    dog.get(Transform).position.set(5, 0, 5);
+    dog.set(new Behavior());
+    dog.set(new WalkTarget());
+    dog.set(new OnClick(function (_) {
+        if (dog.get(Behavior).goal == Goal.Sit) {
+            setDogGoal(Goal.Idle);
+        }
+        else {
+            setDogGoal(Goal.Sit);
+        }
+    }));
+    engine.addEntity(dog);
 });
