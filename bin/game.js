@@ -236,13 +236,13 @@ define("game", ["require", "exports"], function (require, exports) {
     // Dog
     var dog = new Entity();
     dog.set(new GLTFShape('models/BlockDog.gltf'));
-    dog.get(GLTFShape).addClip(new AnimationClip('Idle', { speed: 1 }));
+    dog.get(GLTFShape).addClip(new AnimationClip('Idle'));
     dog.get(GLTFShape)
         .addClip(new AnimationClip('Sitting', { speed: 1, loop: false }));
     dog.get(GLTFShape)
         .addClip(new AnimationClip('Standing', { speed: 1, loop: false }));
-    dog.get(GLTFShape).addClip(new AnimationClip('Walking', { speed: 1 }));
-    dog.get(GLTFShape).addClip(new AnimationClip('Drinking', { speed: 1 }));
+    dog.get(GLTFShape).addClip(new AnimationClip('Walking'));
+    dog.get(GLTFShape).addClip(new AnimationClip('Drinking'));
     dog.get(GLTFShape)
         .getClip('Idle')
         .play();
