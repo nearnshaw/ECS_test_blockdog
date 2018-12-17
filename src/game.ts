@@ -182,7 +182,7 @@ bowl.set(new GLTFShape('models/BlockDogBowl.gltf'))
 bowl.set(new Transform())
 bowl.get(Transform).position.set(9, 0, 1)
 bowl.set(
-  new OnClick(_ => {
+  new OnClick(e => {
     setDogGoal(Goal.GoDrink)
     dog.get(WalkTarget).target = bowl.get(Transform).position
     dog.get(WalkTarget).previousPos = dog.get(Transform).position
@@ -217,7 +217,7 @@ dog.get(Transform).position.set(5, 0, 5)
 dog.set(new Behavior())
 dog.set(new WalkTarget())
 dog.set(
-  new OnClick(_ => {
+  new OnClick(e => {
     if (dog.get(Behavior).goal == Goal.Sit) {
       setDogGoal(Goal.Idle)
     } else {
