@@ -179,8 +179,9 @@ function setAnimations(dog: Entity) {
 // Bowl
 const bowl = new Entity()
 bowl.set(new GLTFShape('models/BlockDogBowl.gltf'))
-bowl.set(new Transform())
-bowl.get(Transform).position.set(9, 0, 1)
+bowl.set(new Transform({
+  position: new Vector3(9, 0, 1)
+}))
 bowl.set(
   new OnClick(e => {
     setDogGoal(Goal.GoDrink)
@@ -194,8 +195,9 @@ engine.addEntity(bowl)
 // Garden
 const garden = new Entity()
 garden.set(new GLTFShape('models/garden.gltf'))
-garden.set(new Transform())
-garden.get(Transform).position.set(5, 0, 5)
+garden.set(new Transform({
+  position: new Vector3(5, 0, 5)
+}))
 engine.addEntity(garden)
 
 // Dog
@@ -212,8 +214,9 @@ dog.get(GLTFShape)
   .getClip('Idle')
   .play()
 
-dog.set(new Transform())
-dog.get(Transform).position.set(5, 0, 5)
+dog.set(new Transform({
+  position: new Vector3(5, 0, 5)
+}))
 dog.set(new Behavior())
 dog.set(new WalkTarget())
 dog.set(
